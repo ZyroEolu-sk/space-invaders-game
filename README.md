@@ -179,4 +179,4 @@ Hecho por:
 - [ZyroEolu-sk](https://github.com/ZyroEolu-sk)
 - [pvinas23](https://github.com/pvinas23)
 
-Proyecto de nuestros primeros pasos creando un juego con Python y Pygame.
+Proyecto de nuestros primeros pasos dentro de la programación creando un juego con Python y Pygame. Lo hemos ordenado respecto al código original. 
