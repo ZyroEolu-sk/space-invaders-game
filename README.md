@@ -31,6 +31,7 @@ La entrada principal es: **`src/main.py`**.
 
 - **Python 3.11+** (según `pyproject.toml`)
 - **pygame 2.6.1+**
+- **uv** (opcional, recomendado para gestionar entorno y dependencias)
 - Windows / macOS / Linux
 
 ---
@@ -60,11 +61,32 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
+#### Opción B: `uv` (rápido y reproducible)
+
+Si no tienes `uv`, instálalo desde la documentación oficial:
+
+- https://docs.astral.sh/uv/
+
+Luego, desde la raíz del proyecto:
+
+```bash
+uv venv
+uv sync
+```
+
+Esto crea el entorno en `.venv` y sincroniza dependencias según `pyproject.toml` y `uv.lock`.
+
 ### 3) Instalar dependencias
 
 ```bash
 pip install -U pip
 pip install pygame
+```
+
+Con `uv`, este paso queda cubierto con:
+
+```bash
+uv sync
 ```
 
 ---
@@ -81,6 +103,12 @@ python3 src/main.py
 **Windows:**
 ```bash
 python src/main.py
+```
+
+Con `uv` (sin activar entorno manualmente):
+
+```bash
+uv run src/main.py
 ```
 
 Si por alguna razón tu Python no resuelve imports como `settings`, ejecútalo desde `src/`:
@@ -166,9 +194,23 @@ Botones simples hechos con pygame para pausa / game over.
 pip install pygame
 ```
 
+Si usas `uv`:
+
+```bash
+uv sync
+```
+
 ### Error cargando imágenes / `FileNotFoundError`
 - Ejecuta el juego desde la **raíz** del repo (recomendado).
 - Verifica que exista la carpeta `assets/` con sus subcarpetas (`sprites`, `ui`, etc.).
+
+---
+
+## Git y entorno (recomendado)
+
+- **Sí** conviene versionar `pyproject.toml` y `uv.lock`.
+- `.venv/` **no** debe subirse al repositorio (ya está ignorado en `.gitignore`).
+- `.python-version` es opcional: súbelo si quieres fijar de forma explícita Python 3.11 para colaboradores que usen `pyenv`/`uv`.
 
 ---
 
