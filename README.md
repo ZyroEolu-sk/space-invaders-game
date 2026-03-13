@@ -1,10 +1,14 @@
 # Space Invaders (pygame)
 
-Proyecto **Space Invaders** hecho con **Python + Pygame**.  
-Este fue de los **primeros proyectos** que hicimos mi amigo y yo, como práctica de programación y diseño de videojuegos 2D.
+Un clon modernizado del clásico *Space Invaders* desarrollado en Python utilizando la librería **Pygame**. ¡Defiende la galaxia de múltiples oleadas alienígenas, recoge power-ups y enfréntate al temible jefe final!
 
-- Repo: `ZyroEolu-sk/space-invaders-game`
-- Colaborador: **pvinas23** (GitHub: https://github.com/pvinas23)
+## ✨ Características
+
+* **4 Niveles de Dificultad:** Progresión de niveles con mecánicas que se vuelven más desafiantes.
+* **Diversidad de Enemigos:** * *Aliens básicos* y *Healers* (que sueltan vidas extra).
+  * *Tech Aliens* que se teletransportan por el mapa.
+  * **Batalla de Jefe (Braincell):** Un enemigo final con múltiples formas, barras de vida y más de 5 patrones de ataque diferentes.
+* **Sistema de High Score:** Tu puntuación máxima se guarda automáticamente de forma persistente.
 
 ---
 
