@@ -2,7 +2,7 @@
 
 Un clon modernizado del clásico *Space Invaders* desarrollado en Python utilizando la librería **Pygame**. ¡Defiende la galaxia de múltiples oleadas alienígenas, recoge power-ups y enfréntate al temible jefe final!
 
-## ✨ Características
+## Características
 
 * **4 Niveles de Dificultad:** Progresión de niveles con mecánicas que se vuelven más desafiantes.
 * **Diversidad de Enemigos:** * *Aliens básicos* y *Healers* (que sueltan vidas extra).
