@@ -34,6 +34,11 @@ class Game:
         self.game_over_img = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "ui", "game_over.png")), (500, 500))
         self.your_score_img = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "ui", "your_score.png")), (250, 250))
         self.highest_score_img = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "ui", "highest_score.png")), (250, 250))
+        self.start_bg_img = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "ui", "fondo_inicio.png")), (WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.press_start_imgs = [
+            pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "ui", "press_to_start_1.png")), (WINDOW_WIDTH, WINDOW_HEIGHT)),
+            pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "ui", "press_to_start_2.png")), (WINDOW_WIDTH, WINDOW_HEIGHT)),
+        ]
 
         # Estrellas de fondo
         self.stars = [{"x": random.randint(0, WINDOW_WIDTH), "y": random.randint(0, WINDOW_HEIGHT)} for _ in range(NUMBER_STARS)]
@@ -147,10 +152,12 @@ class Game:
                     if self.player.colliderect(enemy.rect):
                         self.player_lives = 0
 
-            # Power ups
-            power_hits = pygame.sprite.spritecollide(self.player, self.live_group, True)
-            for hit in power_hits:
-                if self.player_lives < 3: self.player_lives += 1
+            # Power ups: self.player is a Rect, so compare against each sprite rect.
+            for power in self.live_group.sprites():
+                if self.player.colliderect(power.rect):
+                    power.kill()
+                    if self.player_lives < 3:
+                        self.player_lives += 1
                 
         if self.player_lives <= 0 and self.player_is_alive:
             exp = Explosion(self.player.x + 30, self.player.y + 30, PLAYER_WIDTH, PLAYER_HEIGHT)
@@ -228,11 +235,21 @@ class Game:
                 self.level_timer = 300; self.times_done_level_4 += 1
 
     def run(self):
-        # Menú principal sencillo simulado (puedes reemplazarlo por tu lógica de menú)
-        self.screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "ui", "fondo_inicio.png")), (WINDOW_WIDTH, WINDOW_HEIGHT)), (0, 0))
-        pygame.display.update()
+        # Pantalla de inicio con animación de "press start".
+        start_frame = 0
+        start_counter = 0
         waiting = True
         while waiting:
+            self.clock.tick(FPS)
+            start_counter += 1
+            if start_counter >= 30:
+                start_frame = 1 - start_frame
+                start_counter = 0
+
+            self.screen.blit(self.start_bg_img, (0, 0))
+            self.screen.blit(self.press_start_imgs[start_frame], (0, 0))
+            pygame.display.update()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: pygame.quit(); sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN: waiting = False
@@ -313,7 +330,9 @@ class Game:
                 # Textos de nivel
                 self.level_timer -= 1
                 if self.level_1 and 0 < self.level_timer < 260 and self.times_placed_level_1 == 0:
-                    self.screen.blit(self.myfont.render("LEVEL 1", True, WHITE), (230, 260))
+                    level_1_text = self.myfont.render("LEVEL 1", True, WHITE)
+                    level_1_rect = level_1_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 20))
+                    self.screen.blit(level_1_text, level_1_rect)
                 # (Añade aquí los textos de los niveles 2, 3 y 4 si lo deseas)
 
                 if self.paused:
