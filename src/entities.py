@@ -124,7 +124,7 @@ class Braincell(pygame.sprite.Sprite):
 
         # Movimientos (Patrones reducidos por simplicidad de lectura, mantienen tu lógica)
         if self.pattern_0:
-            if self.rect.y < 100: self.rect.y += 1
+            if self.rect.y < 90: self.rect.y += 1
             else: self.pattern_0 = False; self.pattern_1 = True
         elif not self.transformation:
             # Patrón 1
