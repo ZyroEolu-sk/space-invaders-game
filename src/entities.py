@@ -29,6 +29,9 @@ class Aliens(pygame.sprite.Sprite):
             bullet = Bullet(1, (self.rect.centerx, self.rect.bottom), GREEN, 5, 17, BULLET_VEL, 0)
             game.bullets_group.add(bullet)
 
+        if self.rect.top > WINDOW_HEIGHT:
+            self.kill()
+
 class TechAlien(pygame.sprite.Sprite):
     def __init__(self, x, y, velocity, possibility):
         super().__init__()
