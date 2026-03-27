@@ -166,12 +166,14 @@ class Game:
             self.game_over = True
 
     def draw_bg_and_ui(self):
+        star_dx, star_dy = self._get_star_direction_by_level()
+
         for star in self.stars:
             self.screen.blit(self.star_img, (star["x"], star["y"]))
-            star["y"] += STAR_VEL
-            if star["y"] >= WINDOW_HEIGHT:
-                star["y"] = -10; star["x"] = random.randint(0, WINDOW_WIDTH)
-        
+            star["x"] += star_dx
+            star["y"] += star_dy
+            self._wrap_star_position(star)
+
         self.screen.blit(self.score_img, (-70, -90))
         self.screen.blit(self.font.render(str(self.score), True, WHITE), (105, 22))
         self.screen.blit(self.live_img, (360, -90))
@@ -180,6 +182,32 @@ class Game:
         for _ in range(self.player_lives):
             self.screen.blit(self.player_lives_img, (lx, 20))
             lx += 50
+
+    def _get_star_direction_by_level(self):
+        """Returns the stars movement vector according to the current level."""
+        if self.level_1:
+            return 0, STAR_VEL
+        if self.level_2:
+            return STAR_VEL, STAR_VEL // 2
+        if self.level_3:
+            return -STAR_VEL, STAR_VEL // 2
+        return 0, -STAR_VEL
+
+    def _wrap_star_position(self, star):
+        """Wraps star coordinates when they leave the screen."""
+        if star["x"] > WINDOW_WIDTH:
+            star["x"] = -20
+            star["y"] = random.randint(0, WINDOW_HEIGHT)
+        elif star["x"] < -20:
+            star["x"] = WINDOW_WIDTH
+            star["y"] = random.randint(0, WINDOW_HEIGHT)
+
+        if star["y"] > WINDOW_HEIGHT:
+            star["y"] = -20
+            star["x"] = random.randint(0, WINDOW_WIDTH)
+        elif star["y"] < -20:
+            star["y"] = WINDOW_HEIGHT
+            star["x"] = random.randint(0, WINDOW_WIDTH)
 
     def draw_game_over(self):
         high = self.save_score()
