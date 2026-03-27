@@ -208,7 +208,7 @@ class Game:
         elif star["y"] < -20:
             star["y"] = WINDOW_HEIGHT
             star["x"] = random.randint(0, WINDOW_WIDTH)
-
+                    
     def draw_game_over(self):
         high = self.save_score()
         self.screen.fill(BLACK)
@@ -357,11 +357,26 @@ class Game:
                 
                 # Textos de nivel
                 self.level_timer -= 1
-                if self.level_1 and 0 < self.level_timer < 260 and self.times_placed_level_1 == 0:
-                    level_1_text = self.myfont.render("LEVEL 1", True, WHITE)
-                    level_1_rect = level_1_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 20))
-                    self.screen.blit(level_1_text, level_1_rect)
-                # (Añade aquí los textos de los niveles 2, 3 y 4 si lo deseas)
+                if 0 < self.level_timer < 260:
+                    level_label = None
+                    if self.level_1 and self.times_placed_level_1 == 0:
+                        level_label = "LEVEL 1"
+                    elif self.level_2:
+                        level_label = "LEVEL 2"
+                    elif self.level_3:
+                        level_label = "LEVEL 3"
+                    elif self.level_4:
+                        level_label = "LEVEL 4"
+
+                    if level_label is not None:
+                        level_text = self.myfont.render(level_label, True, WHITE)
+                        level_rect = level_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 20))
+                        self.screen.blit(level_text, level_rect)
+                
+                if len(self.braincell_group) == 0 and self.level_4 and self.times_done_level_4 == 1:
+                    win_text = self.myfont.render("YOU WIN!", True, WHITE)
+                    win_rect = win_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 20))
+                    self.screen.blit(win_text, win_rect)
 
                 if self.paused:
                     self.resume_btn.draw(self.screen)
