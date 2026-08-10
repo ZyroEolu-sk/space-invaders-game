@@ -20,6 +20,9 @@ class Game:
         self.font = pygame.font.SysFont(None, 32)
         self.gui_font = pygame.font.Font(None, 50)
         self.myfont = pygame.font.SysFont("colonna", 70) if pygame.font.match_font("colonna") else pygame.font.SysFont(None, 70)
+        # La usa draw_game_over(), que se redibuja en cada frame: crearla ahí
+        # significaba construir una fuente 60 veces por segundo.
+        self.score_font = pygame.font.SysFont("verdana", 20)
         
         self.player_img = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "sprites", "spaceship_red.png")), (PLAYER_WIDTH, PLAYER_HEIGHT))
         self.player_hit_img = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "sprites", "player_hit_image.png")), (PLAYER_WIDTH, PLAYER_HEIGHT))
@@ -185,6 +188,10 @@ class Game:
 
     def _get_star_direction_by_level(self):
         """Returns the stars movement vector according to the current level."""
+        # draw_bg_and_ui() se dibuja también en pausa, así que sin esto el fondo
+        # seguiría desplazándose con el resto del juego congelado.
+        if self.paused:
+            return 0, 0
         if self.level_1:
             return 0, STAR_VEL
         if self.level_2:
@@ -216,9 +223,8 @@ class Game:
         self.screen.blit(self.your_score_img, (WINDOW_WIDTH/2 - 96, 220))
         self.screen.blit(self.highest_score_img, (WINDOW_WIDTH/2 - 113, 265))
         
-        vf = pygame.font.SysFont("verdana", 20)
-        self.screen.blit(vf.render(str(self.score), True, WHITE), (WINDOW_WIDTH/2 + 84, 322))
-        self.screen.blit(vf.render(str(high), True, WHITE), (WINDOW_WIDTH/2 + 102, 376))
+        self.screen.blit(self.score_font.render(str(self.score), True, WHITE), (WINDOW_WIDTH/2 + 84, 322))
+        self.screen.blit(self.score_font.render(str(high), True, WHITE), (WINDOW_WIDTH/2 + 102, 376))
         
         self.retry_btn.draw(self.screen)
         self.quit_go_btn.draw(self.screen)
