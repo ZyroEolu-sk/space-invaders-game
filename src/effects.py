@@ -1,6 +1,7 @@
 import pygame
 import os
 from settings import *
+from assets import image, frames
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, direction, pos, colour, bullet_width, bullet_height, bullet_yvel, bullet_xvel):
@@ -22,7 +23,7 @@ class Bullet(pygame.sprite.Sprite):
 class Power(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
-        self.image = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "ui", "live.png")), (45, 45))
+        self.image = image(os.path.join(ASSETS_PATH, "ui", "live.png"), (45, 45))
         self.rect = self.image.get_rect(center = pos)
         
     def update(self):
@@ -33,14 +34,12 @@ class Power(pygame.sprite.Sprite):
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos, width, height):
         super().__init__()
-        self.explosion_animation_list = []
         explosion_folder = os.path.join(ASSETS_PATH, "animations", "EXPLOSION_2")
-        
-        # Cargar los 3 frames de la explosión dinámicamente
-        for i in range(3):
-            img = pygame.transform.scale(pygame.image.load(os.path.join(explosion_folder, f"explosion-animation-frame-{i}.png")), (width, height))
-            self.explosion_animation_list.append(img)
-            
+        # La caché va por ruta y tamaño, así que cada medida se escala una vez.
+        self.explosion_animation_list = frames(
+            explosion_folder, "explosion-animation-frame-{}.png", range(3), (width, height))
+
+
         self.index = 0
         self.image = self.explosion_animation_list[self.index]
         self.rect = self.image.get_rect(center=[x_pos, y_pos])
@@ -61,12 +60,9 @@ class Explosion(pygame.sprite.Sprite):
 class TeleportAway(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos):
         super().__init__()
-        self.anim_list = []
         folder = os.path.join(ASSETS_PATH, "animations", "TELEPORT_AWAY")
-        for i in range(13):
-            img = pygame.transform.scale(pygame.image.load(os.path.join(folder, f"pixil-frame-{i}.png")), (90, 90))
-            self.anim_list.append(img)
-        
+        self.anim_list = frames(folder, "pixil-frame-{}.png", range(13), (90, 90))
+
         self.index = 0
         self.counter = 0
         self.image = self.anim_list[self.index]
@@ -86,13 +82,11 @@ class Teleport(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos, game):
         super().__init__()
         self.game = game # Referencia al juego para poder invocar TeleportAway al terminar
-        self.anim_list = []
         folder = os.path.join(ASSETS_PATH, "animations", "TELEPORT_AWAY")
         # El teleport normal es la animación al revés (del 12 al 0)
-        for i in range(12, -1, -1):
-            img = pygame.transform.scale(pygame.image.load(os.path.join(folder, f"pixil-frame-{i}.png")), (90, 90))
-            self.anim_list.append(img)
-            
+        self.anim_list = frames(folder, "pixil-frame-{}.png", range(12, -1, -1), (90, 90))
+
+
         self.index = 0
         self.counter = 0
         self.image = self.anim_list[self.index]

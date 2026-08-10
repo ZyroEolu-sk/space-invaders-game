@@ -2,16 +2,17 @@ import pygame
 import os
 import random
 from settings import *
+from assets import image, frames
 from effects import Bullet, TeleportAway, Teleport
 
 class Aliens(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         if random.randint(1, 4) > 1:
-            self.image = pygame.transform.scale((pygame.image.load(os.path.join(ASSETS_PATH, "sprites", "ovni.png"))), (OVNI_WIDTH, OVNI_HEIGHT))
+            self.image = image(os.path.join(ASSETS_PATH, "sprites", "ovni.png"), (OVNI_WIDTH, OVNI_HEIGHT))
             self.red = False
         else:
-            self.image = pygame.transform.scale((pygame.image.load(os.path.join(ASSETS_PATH, "sprites", "healer_ovni.png"))), (OVNI_WIDTH, OVNI_HEIGHT))
+            self.image = image(os.path.join(ASSETS_PATH, "sprites", "healer_ovni.png"), (OVNI_WIDTH, OVNI_HEIGHT))
             self.red = True
             
         self.rect = self.image.get_rect(center=[x, y])
@@ -35,12 +36,10 @@ class Aliens(pygame.sprite.Sprite):
 class TechAlien(pygame.sprite.Sprite):
     def __init__(self, x, y, velocity, possibility):
         super().__init__()
-        self.anim_list = []
         folder = os.path.join(ASSETS_PATH, "animations", "TECH_ALIEN")
-        for i in range(10): # 0 a 9
-            img = pygame.transform.scale(pygame.image.load(os.path.join(folder, f"pixil-frame-{i}.png")), (90, 90))
-            self.anim_list.append(img)
-            
+        self.anim_list = frames(folder, "pixil-frame-{}.png", range(10), (90, 90))
+
+
         self.velocity = velocity
         self.possibility = possibility
         self.index = 0
@@ -76,10 +75,12 @@ class TechAlien(pygame.sprite.Sprite):
 class Braincell(pygame.sprite.Sprite):
     def __init__(self, x, y, velocity):
         super().__init__()
-        # Carga masiva limpia
-        self.anim_base = [pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "animations", "BRAINCELL", f"pixil-frame-{i}.png")), (400, 400)) for i in range(19)]
-        self.anim_super = [pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "animations", "BRAINCELL_2", f"pixil-frame-{i}.png")), (400, 400)) for i in range(1, 19)]
-        self.anim_trans = [pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_PATH, "animations", "BRAINCELL_TRANSFORMATION", f"pixil-frame-{i}.png")), (400, 400)) for i in range(29)]
+        # Carga masiva limpia. Son 66 imágenes de 400x400: la caché evita
+        # releerlas cada vez que aparece un jefe.
+        anim = os.path.join(ASSETS_PATH, "animations")
+        self.anim_base = frames(os.path.join(anim, "BRAINCELL"), "pixil-frame-{}.png", range(19), (400, 400))
+        self.anim_super = frames(os.path.join(anim, "BRAINCELL_2"), "pixil-frame-{}.png", range(1, 19), (400, 400))
+        self.anim_trans = frames(os.path.join(anim, "BRAINCELL_TRANSFORMATION"), "pixil-frame-{}.png", range(29), (400, 400))
 
         self.velocity = velocity
         self.index = 0

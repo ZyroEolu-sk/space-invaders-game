@@ -8,6 +8,7 @@ from settings import *
 from ui import Button
 from effects import Bullet, Explosion, Power, TeleportAway, Teleport
 from entities import Aliens, TechAlien, Braincell
+from levels import LEVELS, STAR_DIR_DEFAULT
 
 class Game:
     def __init__(self):
@@ -78,14 +79,12 @@ class Game:
         self.shoot = False
         self.cooldown = 0
         
-        # Variables de nivel
-        self.level_1, self.level_2, self.level_3, self.level_4 = True, False, False, False
+        # Variables de nivel. El nivel activo es un índice sobre LEVELS, así
+        # que añadir uno nuevo no obliga a tocar nada de aquí.
+        self.level_index = 0
         self.level_timer = 300
-        self.alien_countdown = 0
-        self.times_placed_level_1 = 0
-        self.times_done_level_3 = 0
-        self.times_done_level_4 = 0
-        self.level_text_starter = [False, False, False, False] # Índices 0-3 para Lvl 1-4
+        self.spawn_countdown = 0
+        self.waves_spawned = 0
 
     def save_score(self):
         score_file = os.path.join(BASE_DIR, "score.json")
@@ -192,13 +191,10 @@ class Game:
         # seguiría desplazándose con el resto del juego congelado.
         if self.paused:
             return 0, 0
-        if self.level_1:
-            return 0, STAR_VEL
-        if self.level_2:
-            return STAR_VEL, STAR_VEL // 2
-        if self.level_3:
-            return -STAR_VEL, STAR_VEL // 2
-        return 0, -STAR_VEL
+        level = self.current_level()
+        if level is None:
+            return STAR_DIR_DEFAULT
+        return level["star_dir"]
 
     def _wrap_star_position(self, star):
         """Wraps star coordinates when they leave the screen."""
@@ -229,44 +225,41 @@ class Game:
         self.retry_btn.draw(self.screen)
         self.quit_go_btn.draw(self.screen)
 
+    def current_level(self):
+        """Nivel activo, o None si ya no queda ninguno (partida ganada)."""
+        if 0 <= self.level_index < len(LEVELS):
+            return LEVELS[self.level_index]
+        return None
+
+    def won(self):
+        """True cuando se ha superado el último nivel."""
+        return self.level_index >= len(LEVELS)
+
+    def _groups_clear(self, names):
+        return all(len(getattr(self, name)) == 0 for name in names)
+
     def level_manager(self):
-        # Lógica centralizada de niveles y oleadas
-        if self.level_1 and len(self.alien_group) == 0:
-            if self.score == 0:
-                self.alien_countdown += 1
-                if self.alien_countdown == 200:
-                    self.create_aliens(2, 3, 255)
-                    self.level_timer = 300
-                    self.alien_countdown = 0
-                    self.times_placed_level_1 += 1
-            else:
-                self.level_1 = False; self.level_2 = True
-                
-        elif self.level_2 and len(self.alien_group) == 0:
-            if self.score <= 15:
-                self.alien_countdown += 1
-                if self.alien_countdown == 300:
-                    self.create_aliens(4, 5, 157)
-                    self.level_timer = 200
-                    self.alien_countdown = 0
-            else:
-                self.level_2 = False; self.level_3 = True
+        # Lógica centralizada de niveles y oleadas, guiada por la tabla LEVELS.
+        level = self.current_level()
+        if level is None:
+            return
 
-        elif self.level_3 and len(self.alien_group) == 0 and len(self.tech_alien_group) == 0:
-            if self.times_done_level_3 == 0:
-                self.alien_countdown += 1
-                if self.alien_countdown == 400:
-                    for _ in range(6): self.tech_alien_group.add(TechAlien(random.randint(0, 800), random.randint(-50, 100), 2, 50))
-                    self.alien_countdown = 0; self.level_timer = 300
-                    self.times_done_level_3 += 1
-            else:
-                self.level_3 = False; self.level_4 = True
+        # Hasta que no se limpie lo que hay en pantalla no se suelta la
+        # siguiente oleada ni se avanza de nivel.
+        if not self._groups_clear(level["clear_groups"]):
+            return
 
-        elif self.level_4 and self.times_done_level_4 == 0:
-            self.alien_countdown += 1
-            if self.alien_countdown == 400:
-                self.braincell_group.add(Braincell(350, -150, 2))
-                self.level_timer = 300; self.times_done_level_4 += 1
+        if level["keep_spawning"](self):
+            self.spawn_countdown += 1
+            if self.spawn_countdown >= level["spawn_delay"]:
+                level["spawn"](self)
+                self.level_timer = level["text_timer"]
+                self.spawn_countdown = 0
+                self.waves_spawned += 1
+        else:
+            self.level_index += 1
+            self.spawn_countdown = 0
+            self.waves_spawned = 0
 
     def run(self):
         # Pantalla de inicio con animación de "press start".
@@ -329,9 +322,9 @@ class Game:
                 self.handle_collisions()
 
                 # Actualizar grupos
-                if self.level_1: self.alien_group.update(self, 70, 100, 3)
-                if self.level_2: self.alien_group.update(self, 40, 300, 3)
-                if self.level_3: self.alien_group.update(self, 60, 600, 2)
+                level = self.current_level()
+                if level is not None and level["alien_move"] is not None:
+                    self.alien_group.update(self, *level["alien_move"])
                 
                 self.tech_alien_group.update(self)
                 self.braincell_group.update(self)
@@ -364,22 +357,19 @@ class Game:
                 # Textos de nivel
                 self.level_timer -= 1
                 if 0 < self.level_timer < 260:
+                    level = self.current_level()
                     level_label = None
-                    if self.level_1 and self.times_placed_level_1 == 0:
-                        level_label = "LEVEL 1"
-                    elif self.level_2:
-                        level_label = "LEVEL 2"
-                    elif self.level_3:
-                        level_label = "LEVEL 3"
-                    elif self.level_4:
-                        level_label = "LEVEL 4"
+                    if level is not None:
+                        primera_oleada = not level.get("label_first_wave_only") or self.waves_spawned == 0
+                        if primera_oleada:
+                            level_label = level["label"]
 
                     if level_label is not None:
                         level_text = self.myfont.render(level_label, True, WHITE)
                         level_rect = level_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 20))
                         self.screen.blit(level_text, level_rect)
                 
-                if len(self.braincell_group) == 0 and self.level_4 and self.times_done_level_4 == 1:
+                if self.won():
                     win_text = self.myfont.render("YOU WIN!", True, WHITE)
                     win_rect = win_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 20))
                     self.screen.blit(win_text, win_rect)
